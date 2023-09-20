@@ -16,130 +16,112 @@ div_data.innerHTML=new Intl.DateTimeFormat('pt-BR').format(new Date());
 
 const modal = document.querySelector('.modal-container')
 const tbody = document.querySelector('tbody')
-const sServico = document.querySelector('#m-servico')
-const sDescricao = document.querySelector('#m-descricao')
-const sPreco = document.querySelector('#m-preco')
-const sQuantidade = document.querySelector('#m-quantidade')
-const sValor = document.querySelector('#m-valor')
-const btnSalvar = document.querySelector('#btnSalvar')
-const sTotal = document.querySelector('#m-total')
+const sServico = document.querySelector('servico')
+const sDescricao = document.querySelector('descricao')
+const sPreco = document.querySelector('preco')
+const sQuantidade = document.querySelector('quantidade')
+const sValor = document.querySelector('valor')
+const btnSalvar = document.querySelector('btnSalvar')
+const sTotal = document.querySelector('total')
+const container = document.querySelector('container');
 
-let itens
-let id
-let total = Number('0').toFixed(2);
-let porcentagem = 100
+let itens;
+let id;
+let porcentagem = 100;
 let controleCampo = 1;
-let valor = (total * porcentagem) / 100
-let res = total - valor
+let valor = Number('').toFixed(2);
+let preco = Number('').toFixed(2);
+let quantidade = Number('').toFixed(2);
 
 
-function openModal(edit = false, index = 0) {
-  modal.classList.add('active')
-
-  modal.onclick = e => {
-    if (e.target.classervico.indexOf('modal-container') !== -1) {
-      modal.classList.remove('active')
-    }
-  }
-
-  if (edit) {
-    sServico.value = itens[index].servico
-    sDescricao.value = itens[index].descricao
-    sPreco.value = itens[index].spreco
-    sQuantidade.value = itens[index].squantidade
-    sValor.value = itens[index].sValor
-    id = index
-
-  } else {
-    sServico.value = ''
-    sDescricao.value = ''
-    sPreco.value  = ''
-    sQuantidade.value = ''
-    sValor.value = ''
-  }
-
-  
-}
 
 
-function editItem(index) {
-
-  openModal(true, index)
-}
-
-function deleteItem(index) {
-  itens.splice(index, 1)
-  setItensBD()
-  loadItens()
-}
-
-function insertItem(item, index) {
-  let tr = document.createElement('tr')
+function incluir1() {
+  let tbody = document.getElementById("tbody"); // Selecione a tabela corretamente
+  let tr = document.createElement('tr');
 
   tr.innerHTML = `
-    <td>${item.servico}</td>
-    <td>${item.descricao}</td>
-    <td>R$ ${item.preco}</td>
-    <td>${item.quantidade}</td>
-    <td>R$${item.valor}</td>
-    <td class="acao">
-      <button onclick="editItem(${index})">✏️<i class='bx bx-edit' ></i></button>
-    </td>
-    <td class="acao">
-      <button onclick="deleteItem(${index})">🗑️<i class='bx bx-trash'></i></button>
-    </td>
+  <select id="m-servico" required>
+  <option selected disabled value="Selecione">Selecione</option>
+  <option>FIORI</option>
+  <option>---</option>
+  <option>---</option>
+  <option>---</option>
+  <option>---</option>
+  </select>&nbsp;
+  <td><input id="descricao" type="text" required />
+  <td><input id="preco" type="string" onchange="" /></td>
+  <td><input id="quantidade" type="string" onchange=""/></td>
+  <td><input id="valor" type="number" onchange="calcular()"/></td>
+  <td><button type="button" onclick="removerCampo()"> 🗑️ </button></td>
   `
-  tbody.appendChild(tr)
+  tbody.appendChild(tr);
+
+
+
 }
 
-btnSalvar.onclick = e => {
-  
-  if (sServico.value == '' || sDescricao.value == '' || sPreco.value == ''|| sQuantidade.value == '' || sValor.value == '') {
-    return
-  }
 
-  e.preventDefault();
+function calcularResultado() {
+  const preco = parseFloat(document.getElementById("preco").value);
+  const quantidade = parseFloat(document.getElementById("quantidade").value);
 
-  if (id !== undefined) {
-    itens[id].servico = sServico.value
-    itens[id].descricao = sDescricao.value
-    itens[id].preco = sPreco.value
-    itens[id].quantidade = sQuantidade.value
-    itens[id].valor = sValor.value
+  // Verificar se os valores são válidos
+  if (!isNaN(preco) && !isNaN(quantidade)) {
+      const valor = preco * quantidade;
+      document.getElementById("valor").value = valor;
+      return
   } else {
-    itens.push({'servico': sServico.value, 'descricao': sDescricao.value, 'preco': sPreco.value, 'quantidade': sQuantidade.value, 'valor': sValor})
+      document.getElementById("valor").value = ""; // Limpar o campo de resultado se os valores não forem válidos
   }
-
-  setItensBD()
-
-  modal.classList.remove('active')
-  loadItens()
-  id = undefined 
-  total = parseInt(total)+ parseInt(sValor.value);
-  sTotal.value = total.toLocaleString ('PT-BR');
-  porcentagem = (total / porcentagem) * 100;
 }
 
-function adicionarCampo() {
-  controleCampo++;
-  //console.log(controleCampo);
+// Adicionar eventos de entrada (input) aos campos de entrada para atualização automática
+const precoInput = document.getElementById("preco");
+const quantidadeInput = document.getElementById("quantidade");
 
-  document.getElementById('condicoes').insertAdjacentHTML('beforeend', '<div class="condicoes" id="condicoes2'   + controleCampo +  '  <div class="condicoes">&nbsp;&nbsp;&nbsp;<label for="m-percentual"><select id="m-percentual" required><option selected disabled value="">Selecione</option><option>10%</option><option>20%</option><option>30%</option><option>40%</option><option>50%</option><option>60%</option><option>70%</option><option>80%</option><option>90%</option><option>100%</option></select> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;<label for="m-descricao2"></label> <input id="m-descricao2" type="text" required />&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label for="m-valor2"></label><input id="m-valor2" type="text" required />&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label><button type="button" onclick="adicionarCampo()"> + </button></button>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button type="button" id="' + controleCampo + '" onclick="removerCampo(' + controleCampo + ')"> - <br></button></div><br>');
+precoInput.addEventListener("input", calcularResultado);
+quantidadeInput.addEventListener("input", calcularResultado);
+
+
+function incluir2() {
+  let tr  = document.createElement('tr');
+
+  tr.innerHTML = `
+  <select id="m-porcentagem" required>
+  <option selected disabled value="">Selecione</option>
+  <option>10%</option>
+  <option>20%</option>
+  <option>30%</option>
+  <option>40%</option>
+  <option>50%</option>
+  <option>60%</option>
+  <option>70%</option>
+  <option>80%</option>
+  <option>90%</option>
+  <option>100%</option>
+  <td><input id="m-descricao2" type="text" required /></td>
+  <td><input id="m-valor2" type="number" required /></td>
+  <td><button type="button" onclick="removerCampo()"> 🗑️ </button></td>
+
+  
+  `
+  tbody2.appendChild(tr)
+
+
+
 }
 
-function removerCampo(idCampo) {
-  //console.log("Campo remover: " + idCampo);
-  document.getElementById('condicoes' + idCampo).remove('beforeend', '<div class="condicoes" id="condicoes2'  + controleCampo + '  <div class="condicoes">&nbsp;&nbsp;&nbsp;<label for="m-percentual"><select id="m-percentual" required><option selected disabled value="">Selecione</option><option>10%</option><option>20%</option><option>30%</option><option>40%</option><option>50%</option><option>60%</option><option>70%</option><option>80%</option><option>90%</option><option>100%</option></select> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;<label for="m-descricao2"></label> <input id="m-descricao2" type="text" required />&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label for="m-valor2"></label><input id="m-valor2" type="text" required />&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label><button type="button" onclick="adicionarCampo()"> + </button></button>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button type="button" id="' + controleCampo + '" onclick="removerCampo(' + controleCampo + ')"> - <br></button></div><br>');
-}
 
-function loadItens() {
-  itens = getItensBD()
-  tbody.innerHTML = ''
-  itens.forEach((item, index) => {
-    insertItem(item, index)
-  })
 
-}
+//function loadItens() {
+  //itens = getItensBD()
+  //tbody.innerHTML = ''
+  //itens.forEach((item, index) => {
+  //insertItem(item, index)
+  //})
+
+//}
 
 
 
@@ -149,7 +131,7 @@ function loadItens() {
 const getItensBD = () => JSON.parse(localStorage.getItem('dbfunc')) ?? []
 const setItensBD = () => localStorage.setItem('dbfunc', JSON.stringify(itens))
 
-loadItens()
+//loadItens()
 
 
 //Tabela 2 
